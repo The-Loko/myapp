@@ -129,17 +129,16 @@ class ConnectionService {
       Logger.log('Can start scan: $canStartScan');
       
       if (canStartScan == wifi_scan.CanStartScan.yes) { // Use alias
-        final result = await wifiScanInstance.startScan();
-        if (result == wifi_scan.StartScanResult.started) { // Use alias
-          Logger.log('Scan result: $result');
-          // Wait a bit for scan to complete
+        final started = await wifiScanInstance.startScan();    // startScan() returns a bool
+        if (started) {
+          Logger.log('Scan started');
           await Future.delayed(const Duration(seconds: 2));
           
           final accessPoints = await wifiScanInstance.getScannedResults();
           Logger.log('Found ${accessPoints.length} WiFi networks');
           return accessPoints.map((ap) => WiFiNetwork.fromWiFiAccessPoint(ap)).toList();
         }
-        Logger.log('Scan result: $result');
+        Logger.log('Scan result: $started');
       }
       return [];
     } catch (e) {
