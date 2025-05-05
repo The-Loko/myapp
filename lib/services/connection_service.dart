@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';  // Add this import for Uint8List
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart' as fbs;
-import 'package:wifi_scan/wifi_scan.dart'; // Remove alias 'wifi_scan'
+import 'package:wifi_scan/wifi_scan.dart' as wifi_scan; // Re-add alias 'wifi_scan'
 import '../models/control_data.dart';
 import '../models/bluetooth_device.dart';
 import '../models/wifi_network.dart';
@@ -124,13 +124,13 @@ class ConnectionService {
   // Scan for WiFi networks
   Future<List<WiFiNetwork>> scanWifiNetworks() async {
     try {
-      final wifiScanInstance = WiFiScan.instance; // Use direct class name
+      final wifiScanInstance = wifi_scan.WiFiScan.instance; // Use alias
       final canStartScan = await wifiScanInstance.canStartScan();
       Logger.log('Can start scan: $canStartScan');
       
-      if (canStartScan == CanStartScan.yes) { // Use direct enum name
+      if (canStartScan == wifi_scan.CanStartScan.yes) { // Use alias
         final result = await wifiScanInstance.startScan();
-        if (result == StartScanResult.started) { // Use direct enum name
+        if (result == wifi_scan.StartScanResult.started) { // Use alias
           Logger.log('Scan result: $result');
           // Wait a bit for scan to complete
           await Future.delayed(const Duration(seconds: 2));

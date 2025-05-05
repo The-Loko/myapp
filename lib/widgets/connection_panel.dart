@@ -127,10 +127,11 @@ class _ConnectionPanelState extends State<ConnectionPanel> {
                   // Show dialog with device list
                   final devices = await provider.scanBluetoothDevices();
                   
-                  if (!mounted) return;
+                  // Guard context use before async gap
+                  if (!mounted) return; 
                   
                   // Using a separate function to avoid BuildContext across async gap issue
-                  _showDeviceSelectionDialog(context, devices);
+                  _showDeviceSelectionDialog(context, devices); 
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accentColor,
@@ -246,7 +247,8 @@ class _ConnectionPanelState extends State<ConnectionPanel> {
         ],
       ),
     ).then((selectedDevice) {
-      if (!mounted) return;
+      // Guard context use after async gap (dialog closing)
+      if (!mounted) return; 
       if (selectedDevice != null) {
         Provider.of<CarControlProvider>(context, listen: false)
           .connectBluetooth(selectedDevice.address);
