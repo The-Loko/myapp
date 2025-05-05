@@ -6,7 +6,7 @@ import '../utils/constants.dart';
 import '../models/bluetooth_device.dart';
 
 class ConnectionPanel extends StatefulWidget {
-  const ConnectionPanel({Key? key}) : super(key: key);
+  const ConnectionPanel({super.key});
 
   @override
   State<ConnectionPanel> createState() => _ConnectionPanelState();
@@ -145,12 +145,7 @@ class _ConnectionPanelState extends State<ConnectionPanel> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Color.fromRGBO(
-                  AppColors.secondaryColor.red, 
-                  AppColors.secondaryColor.green, 
-                  AppColors.secondaryColor.blue, 
-                  0.1
-                ),
+                color: AppColors.secondaryColor.withAlpha((0.1 * 255).round()),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Row(
@@ -251,6 +246,7 @@ class _ConnectionPanelState extends State<ConnectionPanel> {
         ],
       ),
     ).then((selectedDevice) {
+      if (!mounted) return;
       if (selectedDevice != null) {
         Provider.of<CarControlProvider>(context, listen: false)
           .connectBluetooth(selectedDevice.address);

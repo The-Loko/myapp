@@ -6,7 +6,7 @@ import '../widgets/control_panel.dart';
 import '../utils/constants.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key}); // Use super parameter
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +39,7 @@ class HomeScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(12),
                     margin: const EdgeInsets.symmetric(vertical: 8),
                     decoration: BoxDecoration(
-                      color: AppColors.errorColor.withOpacity(0.1),
+                      color: AppColors.errorColor.withAlpha((0.1 * 255).round()), // Replace withOpacity
                       border: Border.all(color: AppColors.errorColor),
                       borderRadius: BorderRadius.circular(4),
                     ),

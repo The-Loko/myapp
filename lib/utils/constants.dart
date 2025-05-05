@@ -12,7 +12,7 @@ class AppTheme {
     return ThemeData(
       primaryColor: AppColors.primaryColor,
       scaffoldBackgroundColor: AppColors.secondaryColor,
-      colorScheme: ColorScheme.light(
+      colorScheme: const ColorScheme.light( // Add const
         primary: AppColors.primaryColor,
         secondary: AppColors.accentColor,
         error: AppColors.errorColor,
@@ -24,7 +24,7 @@ class AppTheme {
       sliderTheme: SliderThemeData(
         activeTrackColor: AppColors.accentColor,
         thumbColor: AppColors.accentColor,
-        inactiveTrackColor: AppColors.primaryColor.withOpacity(0.3),
+        inactiveTrackColor: AppColors.primaryColor.withAlpha((0.3 * 255).round()), // Replace withOpacity
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(

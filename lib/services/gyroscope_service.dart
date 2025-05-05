@@ -19,7 +19,7 @@ class GyroscopeService {
     if (_isActive) return;
 
     _onDataReceived = onDataReceived;
-    _gyroscopeSubscription = gyroscopeEvents.listen((GyroscopeEvent event) {
+    _gyroscopeSubscription = gyroscopeEventStream().listen((GyroscopeEvent event) {
       final controlData = ControlData(
         x: event.x,
         y: event.y,

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';  // Add this import for Uint8List
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart' as fbs;
-import 'package:wifi_scan/wifi_scan.dart';  // Replace wifi_iot with wifi_scan
+import 'package:wifi_scan/wifi_scan.dart'; // Remove alias 'wifi_scan'
 import '../models/control_data.dart';
 import '../models/bluetooth_device.dart';
 import '../models/wifi_network.dart';
@@ -124,21 +124,22 @@ class ConnectionService {
   // Scan for WiFi networks
   Future<List<WiFiNetwork>> scanWifiNetworks() async {
     try {
-      final wifiScan = WiFiScan.instance;
-      final canStartScan = await wifiScan.canStartScan();
-      print('Can start scan: $canStartScan');
+      final wifiScanInstance = WiFiScan.instance; // Use direct class name
+      final canStartScan = await wifiScanInstance.canStartScan();
+      Logger.log('Can start scan: $canStartScan');
       
-      if (canStartScan == CanStartScan.yes) {
-        final result = await wifiScan.startScan();
-        print('Scan result: $result');
-        if (result == StartScanResult.success) {  // Changed from ScanResult to StartScanResult
+      if (canStartScan == CanStartScan.yes) { // Use direct enum name
+        final result = await wifiScanInstance.startScan();
+        if (result == StartScanResult.started) { // Use direct enum name
+          Logger.log('Scan result: $result');
           // Wait a bit for scan to complete
           await Future.delayed(const Duration(seconds: 2));
           
-          final accessPoints = await wifiScan.getScannedResults();
-          print('Found ${accessPoints.length} WiFi networks');
+          final accessPoints = await wifiScanInstance.getScannedResults();
+          Logger.log('Found ${accessPoints.length} WiFi networks');
           return accessPoints.map((ap) => WiFiNetwork.fromWiFiAccessPoint(ap)).toList();
         }
+        Logger.log('Scan result: $result');
       }
       return [];
     } catch (e) {

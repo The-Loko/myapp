@@ -5,7 +5,7 @@ import '../utils/constants.dart';
 import '../services/connection_service.dart';
 
 class ControlPanel extends StatelessWidget {
-  const ControlPanel({Key? key}) : super(key: key);
+  const ControlPanel({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +45,7 @@ class ControlPanel extends StatelessWidget {
                         : Colors.grey,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withAlpha((0.3 * 255).round()),
                         blurRadius: 8,
                         offset: const Offset(0, 3),
                       ),
@@ -94,7 +94,7 @@ class ControlPanel extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.secondaryColor.withOpacity(0.1),
+                  color: AppColors.secondaryColor.withAlpha((0.1 * 255).round()),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Column(
