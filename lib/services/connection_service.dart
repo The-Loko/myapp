@@ -6,6 +6,8 @@ import 'package:wifi_scan/wifi_scan.dart';  // Replace wifi_iot with wifi_scan
 import '../models/control_data.dart';
 import '../models/bluetooth_device.dart';
 import '../models/wifi_network.dart';
+import '../utils/logger.dart';
+
 
 enum ConnectionType { wifi, bluetooth, none }
 enum ConnectionStatus { connected, disconnected, connecting, error }
@@ -124,20 +126,24 @@ class ConnectionService {
     try {
       final wifiScan = WiFiScan.instance;
       final canStartScan = await wifiScan.canStartScan();
+      print('Can start scan: $canStartScan');
       
       if (canStartScan == CanStartScan.yes) {
         final result = await wifiScan.startScan();
-        if (result == StartScanResult.success) {
+        print('Scan result: $result');
+        if (result == StartScanResult.success) {  // Changed from ScanResult to StartScanResult
           // Wait a bit for scan to complete
           await Future.delayed(const Duration(seconds: 2));
           
           final accessPoints = await wifiScan.getScannedResults();
+          print('Found ${accessPoints.length} WiFi networks');
           return accessPoints.map((ap) => WiFiNetwork.fromWiFiAccessPoint(ap)).toList();
         }
       }
       return [];
     } catch (e) {
       _errorMessage = "WiFi scan failed: ${e.toString()}";
+      Logger.log('WiFi scan error: $_errorMessage');
       return [];
     }
   }
