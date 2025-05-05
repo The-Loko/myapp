@@ -42,3 +42,27 @@ samples, guidance on mobile development, and a full API reference.
    ```dart
    await provider.disconnect();
    ```
+
+## Hardware Connections
+
+ESP32  —  L298N Motor Driver
+- GPIO15 (MOTOR_A_IN1) → IN1
+- GPIO26 (MOTOR_A_IN2) → IN2
+- GPIO5  (MOTOR_B_IN3) → IN3
+- GPIO18 (MOTOR_B_IN4) → IN4
+- GPIO4  (MOTOR_A_ENA) → ENA (PWM channel 0)
+- GPIO19 (MOTOR_B_ENB) → ENB (PWM channel 1)
+
+ESP32  —  HC-SR04 Ultrasonic Sensor
+- GPIO13 (TRIG_PIN) → Trig
+- GPIO12 (ECHO_PIN) → Echo
+
+ESP32  —  Status LEDs (active HIGH)
+- GPIO2  → LED_STATUS (on-board)
+- GPIO27 → LED_WIFI
+- GPIO14 → LED_BT
+
+Power & Ground
+- ESP32 5V → sensor VCC & L298N 5V logic VCC
+- External motor battery → L298N 12V motor VCC
+- Shared GND between ESP32, sensors, and L298N
