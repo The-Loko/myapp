@@ -20,15 +20,23 @@
   - 9V or 12V battery for motors
 */
 
-#include <ArduinoJson.h>  // For parsing JSON data
-#include <WiFi.h>         // For WiFi connectivity
-#include <WebServer.h>    // For creating a web server
 #include <BluetoothSerial.h> // For Bluetooth connectivity
 
 // Check if Bluetooth is properly supported
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
   #error Bluetooth is not enabled! Please run `make menuconfig` to enable it
 #endif
+
+// Add forward declarations for functions used before they’re defined
+void stopMotors();
+void blinkLED(int pin, int times, int delayMs);
+void handleBluetoothData();
+void checkForObstacles();
+void checkTimeout();
+void handleObstacleAvoidance();
+void processGyroData(String jsonData);
+void controlMotors(float x, float y);
+void setMotors(int leftSpeed, int rightSpeed, bool leftForward, bool rightForward);
 
 // Motor control pins for L298N
 #define MOTOR_A_IN1 15  // Input 1 for motor A direction
@@ -57,12 +65,7 @@
 #define MIN_DISTANCE 20 // Minimum distance in cm before stopping/avoiding
 #define AVOID_DURATION 1000 // Duration of avoidance maneuver in ms
 
-// WiFi credentials
-const char* ssid = "GyroCar";     // WiFi network name
-const char* password = "gyrocar123"; // WiFi network password
-
 // Connection status
-bool wifiConnected = false;
 bool btConnected = false;
 
 // Current motor values
@@ -75,9 +78,6 @@ bool rightMotorForward = true;
 bool obstacleDetected = false;
 unsigned long obstacleDetectedTime = 0;
 bool avoidanceManeuverActive = false;
-
-// Create WebServer object on port 80
-WebServer server(80);
 
 // Create Bluetooth Serial object
 BluetoothSerial SerialBT;
@@ -121,9 +121,6 @@ void setup() {
   // Stop motors initially
   stopMotors();
   
-  // Start in WiFi AP mode
-  setupWiFi();
-  
   // Start Bluetooth with the name "GyroCar"
   SerialBT.begin("GyroCar");
   
@@ -132,9 +129,6 @@ void setup() {
 }
 
 void loop() {
-  // Handle web server client requests
-  server.handleClient();
-  
   // Handle Bluetooth data
   if (SerialBT.available()) {
     handleBluetoothData();
@@ -151,48 +145,6 @@ void loop() {
   
   // Handle obstacle avoidance if needed
   handleObstacleAvoidance();
-}
-
-// Set up WiFi Access Point
-void setupWiFi() {
-  Serial.println("Setting up WiFi Access Point...");
-  
-  // Configure ESP32 as an Access Point
-  WiFi.softAP(ssid, password);
-  
-  IPAddress IP = WiFi.softAPIP();
-  Serial.print("AP IP address: ");
-  Serial.println(IP);
-  
-  // Route for receiving gyroscope data via HTTP POST
-  server.on("/gyro", HTTP_POST, handleWiFiGyroData);
-  
-  // Route for device status
-  server.on("/status", HTTP_GET, []() {
-    String status = "{ \"status\": \"ready\", \"battery\": 100, ";
-    status += "\"obstacle\": " + String(obstacleDetected ? "true" : "false") + ", ";
-    status += "\"distance\": " + String(distance) + " }";
-    server.send(200, "application/json", status);
-  });
-  
-  // Start server
-  server.begin();
-  Serial.println("HTTP server started");
-  
-  wifiConnected = true;
-  digitalWrite(LED_WIFI, HIGH); // Turn on WiFi LED
-}
-
-// Handle gyroscope data received via WiFi
-void handleWiFiGyroData() {
-  if (server.hasArg("plain")) {
-    String jsonData = server.arg("plain");
-    processGyroData(jsonData);
-    server.send(200, "text/plain", "OK");
-    lastActivityTime = millis();
-  } else {
-    server.send(400, "text/plain", "Bad Request");
-  }
 }
 
 // Handle gyroscope data received via Bluetooth
@@ -230,30 +182,21 @@ void processGyroData(String jsonData) {
   // Print raw data for debugging
   Serial.print("Received data: ");
   Serial.println(jsonData);
-  
-  // Parse JSON
-  DynamicJsonDocument doc(256);
-  DeserializationError error = deserializeJson(doc, jsonData);
-  
-  // Test if parsing succeeds
-  if (error) {
-    Serial.print("deserializeJson() failed: ");
-    Serial.println(error.c_str());
+
+  // Manual parsing: expect {"x":<num>,"y":<num>,"z":<num>}
+  char buf[64];
+  jsonData.toCharArray(buf, sizeof(buf));
+  float x=0, y=0, z=0;
+  if (sscanf(buf, "{\"x\":%f,\"y\":%f,\"z\":%f}", &x, &y, &z) != 3) {
+    Serial.println("JSON parse error");
     return;
   }
-  
-  // Extract gyroscope values
-  float x = doc["x"];
-  float y = doc["y"];
-  float z = doc["z"];
-  
-  Serial.print("X: ");
-  Serial.print(x);
-  Serial.print(", Y: ");
-  Serial.print(y);
-  Serial.print(", Z: ");
-  Serial.println(z);
-  
+
+  // Debug output
+  Serial.print("X: "); Serial.print(x);
+  Serial.print(", Y: "); Serial.print(y);
+  Serial.print(", Z: "); Serial.println(z);
+
   // Don't control motors if obstacle avoidance is active
   if (!avoidanceManeuverActive) {
     // Map gyro values to motor speeds
@@ -409,7 +352,7 @@ void handleObstacleAvoidance() {
 
 // Check if there's been no activity and stop motors
 void checkTimeout() {
-  if (millis() - lastActivityTime > TIMEOUT_MS && (wifiConnected || btConnected)) {
+  if (millis() - lastActivityTime > TIMEOUT_MS && btConnected) {
     // No activity for the timeout period
     if (leftMotorSpeed > 0 || rightMotorSpeed > 0) {
       Serial.println("Connection timeout, stopping motors");

@@ -13,16 +13,7 @@ class ConnectionPanel extends StatefulWidget {
 }
 
 class _ConnectionPanelState extends State<ConnectionPanel> {
-  final TextEditingController _ipAddressController = TextEditingController();
-  final TextEditingController _portController = TextEditingController(text: "80");
-  ConnectionType _selectedType = ConnectionType.wifi;
-
-  @override
-  void dispose() {
-    _ipAddressController.dispose();
-    _portController.dispose();
-    super.dispose();
-  }
+  // no Wi-Fi controllers or selection needed
 
   @override
   Widget build(BuildContext context) {
@@ -46,82 +37,8 @@ class _ConnectionPanelState extends State<ConnectionPanel> {
             ),
             const SizedBox(height: 16),
             
-            // Connection type selector
-            Row(
-              children: [
-                Expanded(
-                  child: RadioListTile<ConnectionType>(
-                    title: const Text('WiFi', style: TextStyle(color: AppColors.secondaryColor)),
-                    value: ConnectionType.wifi,
-                    groupValue: _selectedType,
-                    onChanged: isConnected ? null : (ConnectionType? value) {
-                      if (value != null) {
-                        setState(() {
-                          _selectedType = value;
-                        });
-                      }
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: RadioListTile<ConnectionType>(
-                    title: const Text('Bluetooth', style: TextStyle(color: AppColors.secondaryColor)),
-                    value: ConnectionType.bluetooth,
-                    groupValue: _selectedType,
-                    onChanged: isConnected ? null : (ConnectionType? value) {
-                      if (value != null) {
-                        setState(() {
-                          _selectedType = value;
-                        });
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
-            
-            const SizedBox(height: 16),
-            
-            // WiFi connection fields
-            if (_selectedType == ConnectionType.wifi && !isConnected) ...[
-              TextField(
-                controller: _ipAddressController,
-                decoration: InputDecoration(
-                  labelText: 'IP Address',
-                  labelStyle: const TextStyle(color: AppColors.secondaryColor),
-                  hintText: '192.168.1.100',
-                  hintStyle: TextStyle(color: AppColors.secondaryColor.withAlpha(128)),
-                  enabledBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: AppColors.secondaryColor),
-                  ),
-                  focusedBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: AppColors.accentColor),
-                  ),
-                ),
-                style: const TextStyle(color: AppColors.secondaryColor),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _portController,
-                decoration: InputDecoration(
-                  labelText: 'Port',
-                  labelStyle: const TextStyle(color: AppColors.secondaryColor),
-                  hintText: '80',
-                  hintStyle: TextStyle(color: AppColors.secondaryColor.withAlpha(128)),
-                  enabledBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: AppColors.secondaryColor),
-                  ),
-                  focusedBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: AppColors.accentColor),
-                  ),
-                ),
-                keyboardType: TextInputType.number,
-                style: const TextStyle(color: AppColors.secondaryColor),
-              ),
-            ],
-            
             // Bluetooth device selection (simplified)
-            if (_selectedType == ConnectionType.bluetooth && !isConnected) ...[
+            if (!isConnected) ...[
               ElevatedButton(
                 onPressed: () async {
                   // Show dialog with device list
@@ -186,27 +103,21 @@ class _ConnectionPanelState extends State<ConnectionPanel> {
             
             const SizedBox(height: 16),
             
-            // Connect/Disconnect Button
+            // Scan & Connect / Disconnect Button
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (provider.connectionStatus == ConnectionStatus.connected) {
                   provider.disconnect();
-                } else if (_selectedType == ConnectionType.wifi) {
-                  final ipAddress = _ipAddressController.text;
-                  final port = int.tryParse(_portController.text) ?? 80;
-                  provider.connectWifi(ipAddress, port);
+                } else {
+                  final devices = await provider.scanBluetoothDevices();
+                  if (!mounted) return;
+                  _showDeviceSelectionDialog(context, devices);
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: provider.connectionStatus == ConnectionStatus.connected
-                    ? Colors.red
-                    : AppColors.accentColor,
+                backgroundColor: isConnected ? Colors.red : AppColors.accentColor,
               ),
-              child: Text(
-                provider.connectionStatus == ConnectionStatus.connected
-                    ? 'Disconnect'
-                    : 'Connect',
-              ),
+              child: Text(isConnected ? 'Disconnect' : 'Scan & Connect'),
             ),
           ],
         ),
