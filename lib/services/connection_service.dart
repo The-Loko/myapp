@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';                      // <-- new
 import 'dart:typed_data';  // Add this import for Uint8List
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart' as fbs;
 import 'package:wifi_scan/wifi_scan.dart' as wifi_scan; // Re-add alias 'wifi_scan'
@@ -17,7 +16,6 @@ class ConnectionService {
   ConnectionType _connectionType = ConnectionType.none;
   ConnectionStatus _connectionStatus = ConnectionStatus.disconnected;
   fbs.BluetoothConnection? _bluetoothConnection;
-  Socket? _socket;                   // <-- new
   String _errorMessage = '';
   String _targetAddress = '';
 
@@ -103,18 +101,6 @@ class ConnectionService {
       _errorMessage = "Data sending error: ${e.toString()}";
       _connectionStatus = ConnectionStatus.error;
       return false;
-    }
-  }
-
-  /// Send a JSON‐encoded string (with trailing newline) over BT or WiFi
-  Future<void> sendData(String jsonData) async {
-    final payload = "$jsonData\n";
-    if (_connectionType == ConnectionType.bluetooth && _bluetoothConnection != null) {
-      _bluetoothConnection!.output.add(Uint8List.fromList(utf8.encode(payload)));
-      await _bluetoothConnection!.output.allSent;
-    } else if (_connectionType == ConnectionType.wifi && _socket != null) {
-      _socket!.write(payload);
-      await _socket!.flush();
     }
   }
 
