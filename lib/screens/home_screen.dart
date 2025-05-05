@@ -1,30 +1,34 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import '../providers/car_control_provider.dart';
+import '../services/connection_service.dart';
 import '../widgets/connection_panel.dart';
 import '../widgets/control_panel.dart';
 import '../utils/constants.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key}); // Use super parameter
+  const HomeScreen({super.key});
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  HomeScreenState createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class HomeScreenState extends State<HomeScreen> {
   final List<StreamSubscription> _subs = [];
 
   @override
   void initState() {
     super.initState();
     final provider = Provider.of<CarControlProvider>(context, listen: false);
-    _subs.add(gyroscopeEvents.listen((event) {
-      if (provider.connectionStatus == ConnectionStatus.connected) {
-        provider.sendGyroData(event.x, event.y, event.z);
-      }
-    }));
+    _subs.add(
+      gyroscopeEventStream().listen((event) {
+        if (provider.connectionStatus == ConnectionStatus.connected) {
+          provider.sendGyroData(event.x, event.y, event.z);
+        }
+      }),
+    );
   }
 
   @override

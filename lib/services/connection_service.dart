@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';                      // <-- new
 import 'dart:typed_data';  // Add this import for Uint8List
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart' as fbs;
 import 'package:wifi_scan/wifi_scan.dart' as wifi_scan; // Re-add alias 'wifi_scan'
@@ -16,6 +17,7 @@ class ConnectionService {
   ConnectionType _connectionType = ConnectionType.none;
   ConnectionStatus _connectionStatus = ConnectionStatus.disconnected;
   fbs.BluetoothConnection? _bluetoothConnection;
+  Socket? _socket;                   // <-- new
   String _errorMessage = '';
   String _targetAddress = '';
 
