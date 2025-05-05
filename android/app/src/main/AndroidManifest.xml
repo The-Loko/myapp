@@ -15,6 +15,12 @@
         android:label="GyroCar"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+
+        <!-- Tell Flutter to use the V2 embedding -->
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2"/>
+
         <!-- ... existing application elements ... -->
     </application>
 </manifest>
