@@ -104,6 +104,18 @@ class ConnectionService {
     }
   }
 
+  /// Send a JSON‐encoded string (with trailing newline) over BT or WiFi
+  Future<void> sendData(String jsonData) async {
+    final payload = "$jsonData\n";
+    if (_connectionType == ConnectionType.bluetooth && _bluetoothConnection != null) {
+      _bluetoothConnection!.output.add(Uint8List.fromList(utf8.encode(payload)));
+      await _bluetoothConnection!.output.allSent;
+    } else if (_connectionType == ConnectionType.wifi && _socket != null) {
+      _socket!.write(payload);
+      await _socket!.flush();
+    }
+  }
+
   // Scan for Bluetooth devices
   Future<List<BluetoothDevice>> scanBluetoothDevices() async {
     try {

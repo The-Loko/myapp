@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'dart:convert';
 import '../services/gyroscope_service.dart';
 import '../services/connection_service.dart';
 import '../models/control_data.dart';
@@ -75,6 +76,12 @@ class CarControlProvider with ChangeNotifier {
     _lastControlData = data;
     _connectionService.sendControlData(data);
     notifyListeners();
+  }
+
+  /// Send gyroscope data as JSON to the ESP32
+  Future<void> sendGyroData(double x, double y, double z) {
+    final json = jsonEncode({'x': x, 'y': y, 'z': z});
+    return _connectionService.sendData(json);
   }
 
   @override
