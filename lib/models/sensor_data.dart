@@ -27,9 +27,8 @@ class SensorData {
       'timestamp': timestamp.toIso8601String(),
     };
   }
-
   @override
   String toString() {
-    return 'SensorData(distance: ${distance}cm, temp: ${temperature}°C, humidity: ${humidity}%)';
+    return 'SensorData(distance: ${distance}cm, temp: ${temperature}°C, humidity: $humidity%)';
   }
 }

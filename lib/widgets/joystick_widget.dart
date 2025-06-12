@@ -90,9 +90,8 @@ class _JoystickWidgetState extends State<JoystickWidget> {
                 : Colors.grey[400]!,
             width: 3,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+          boxShadow: [            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -132,9 +131,8 @@ class _JoystickWidgetState extends State<JoystickWidget> {
                     color: Colors.white,
                     width: 3,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
+                  boxShadow: [                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.3),
                       blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
@@ -143,10 +141,9 @@ class _JoystickWidgetState extends State<JoystickWidget> {
                 child: Center(
                   child: Container(
                     width: _knobRadius * 0.6,
-                    height: _knobRadius * 0.6,
-                    decoration: BoxDecoration(
+                    height: _knobRadius * 0.6,                    decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                   ),
                 ),
