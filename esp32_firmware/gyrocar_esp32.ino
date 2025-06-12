@@ -1,12 +1,12 @@
 /*
   GyroCar ESP32 Firmware
   
-  This firmware allows an ESP32 to receive gyroscope data from a mobile app
+  This firmware allows an ESP32 to receive joystick data from a mobile app
   via either WiFi or Bluetooth, and control DC motors accordingly.
   
   Features:
   - Dual connectivity mode (WiFi or Bluetooth)
-  - JSON parsing for gyroscope data
+  - JSON parsing for joystick data
   - DC motor control with L298N driver
   - Obstacle avoidance with HC-SR04 ultrasonic sensor
   - Status LED indicators
@@ -37,7 +37,7 @@ void handleBluetoothData();
 void checkForObstacles();
 void checkTimeout();
 void handleObstacleAvoidance();
-void processGyroData(String jsonData);
+void processJoystickData(String jsonData);
 void controlMotors(float x, float y);
 void setMotors(int leftSpeed, int rightSpeed, bool leftForward, bool rightForward);
 
@@ -227,8 +227,8 @@ void handleBluetoothData() {
   }
 }
 
-// Process gyroscope data and control motors
-void processGyroData(String jsonData) {
+// Process joystick data and control motors
+void processJoystickData(String jsonData) {
   // Print raw data for debugging
   Serial.print("Received data: ");
   Serial.println(jsonData);
@@ -249,7 +249,7 @@ void processGyroData(String jsonData) {
 
   // Don't control motors if obstacle avoidance is active
   if (!avoidanceManeuverActive) {
-    // Map gyro values to motor speeds
+    // Map joystick values to motor speeds
     controlMotors(x, y);
   }
   
@@ -257,7 +257,7 @@ void processGyroData(String jsonData) {
   digitalWrite(LED_STATUS, !digitalRead(LED_STATUS));
 }
 
-// Control motors based on gyroscope data
+// Control motors based on joystick data
 void controlMotors(float x, float y) {
   // Y controls forward/backward
   // X controls left/right turning

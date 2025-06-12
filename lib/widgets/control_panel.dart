@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/car_control_provider.dart';
 import '../utils/constants.dart';
 import '../services/connection_service.dart';
+import '../widgets/joystick_widget.dart';
 
 class ControlPanel extends StatelessWidget {
   const ControlPanel({super.key});
@@ -20,8 +21,7 @@ class ControlPanel extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
+          children: [            Text(
               'Car Controls',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 color: AppColors.secondaryColor,
@@ -63,9 +63,67 @@ class ControlPanel extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             
+            // Joystick Controls (only show when active)
+            if (provider.isControlActive) ...[
+              Text(
+                'Joystick Control',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: AppColors.secondaryColor,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              
+              Center(
+                child: JoystickWidget(
+                  onChanged: (x, y) {
+                    provider.updateJoystickPosition(x, y);
+                  },
+                  size: 200.0,
+                  enabled: isConnected && provider.isControlActive,
+                ),
+              ),
+              const SizedBox(height: 24),
+              
+              // Instructions
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.secondaryColor.withAlpha((0.1 * 255).round()),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Column(
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.info_outline, color: AppColors.secondaryColor, size: 16),
+                        SizedBox(width: 8),
+                        Text(
+                          'Joystick Controls:',
+                          style: TextStyle(
+                            color: AppColors.secondaryColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      '• Up/Down: Forward/Backward\n• Left/Right: Turning\n• Center: Stop',
+                      style: TextStyle(
+                        color: AppColors.secondaryColor,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+            
             // Sensitivity Slider
             Text(
-              'Gyroscope Sensitivity',
+              'Control Sensitivity',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: AppColors.secondaryColor,
               ),
@@ -88,8 +146,7 @@ class ControlPanel extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            
-            // Current values display
+              // Current values display
             if (provider.lastControlData != null && provider.isControlActive) ...[
               Container(
                 padding: const EdgeInsets.all(8),
@@ -101,7 +158,7 @@ class ControlPanel extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Current Gyroscope Values:',
+                      'Current Control Values:',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: AppColors.secondaryColor,
                       ),
@@ -110,13 +167,8 @@ class ControlPanel extends StatelessWidget {
                     Text(
                       'X: ${(provider.lastControlData!.x * provider.sensitivity).toStringAsFixed(2)}',
                       style: const TextStyle(color: AppColors.secondaryColor),
-                    ),
-                    Text(
+                    ),                    Text(
                       'Y: ${(provider.lastControlData!.y * provider.sensitivity).toStringAsFixed(2)}',
-                      style: const TextStyle(color: AppColors.secondaryColor),
-                    ),
-                    Text(
-                      'Z: ${(provider.lastControlData!.z * provider.sensitivity).toStringAsFixed(2)}',
                       style: const TextStyle(color: AppColors.secondaryColor),
                     ),
                   ],
