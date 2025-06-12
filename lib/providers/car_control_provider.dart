@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'dart:async';
 import '../services/joystick_service.dart';
 import '../services/connection_service.dart';
+import '../services/camera_service.dart';
 import '../models/control_data.dart';
 import '../models/bluetooth_device.dart';
 import '../models/wifi_network.dart';
@@ -10,12 +11,13 @@ import '../models/sensor_data.dart';
 class CarControlProvider with ChangeNotifier {
   final JoystickService _joystickService = JoystickService();
   final ConnectionService _connectionService = ConnectionService();
-  StreamSubscription<SensorData>? _sensorDataSubscription;
-  bool get isControlActive => _joystickService.isActive;
+  final CameraService _cameraService = CameraService();
+  StreamSubscription<SensorData>? _sensorDataSubscription;  bool get isControlActive => _joystickService.isActive;
   double get sensitivity => _joystickService.sensitivity;
   ConnectionType get connectionType => _connectionService.connectionType;
   ConnectionStatus get connectionStatus => _connectionService.connectionStatus;
   String get errorMessage => _connectionService.errorMessage;
+  CameraService get cameraService => _cameraService;
   
   ControlData? _lastControlData;
   ControlData? get lastControlData => _lastControlData;
@@ -84,9 +86,24 @@ class CarControlProvider with ChangeNotifier {
   Future<List<BluetoothDevice>> scanBluetoothDevices() {
     return _connectionService.scanBluetoothDevices();
   }
-
   Future<List<WiFiNetwork>> scanWifiNetworks() {
     return _connectionService.scanWifiNetworks();
+  }
+  
+  // Camera control methods
+  Future<bool> connectCamera(String ipAddress, {int port = 80}) async {
+    final result = await _cameraService.connect(ipAddress, port: port);
+    notifyListeners();
+    return result;
+  }
+  
+  Future<void> disconnectCamera() async {
+    await _cameraService.disconnect();
+    notifyListeners();
+  }
+  
+  Future<bool> testCameraConnection(String ipAddress, {int port = 80}) {
+    return _cameraService.testConnection(ipAddress, port: port);
   }
   void _handleJoystickData(ControlData data) {
     _lastControlData = data;
@@ -98,6 +115,7 @@ class CarControlProvider with ChangeNotifier {
     _joystickService.dispose();
     _connectionService.disconnect();
     _connectionService.dispose();
+    _cameraService.dispose();
     super.dispose();
   }
 }

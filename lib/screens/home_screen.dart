@@ -5,6 +5,7 @@ import '../widgets/connection_panel.dart';
 import '../widgets/control_panel.dart';
 import '../widgets/sensor_panel.dart';
 import '../widgets/sensor_history_widget.dart';
+import '../widgets/camera_preview_widget.dart';
 import '../utils/constants.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -24,6 +25,11 @@ class HomeScreen extends StatelessWidget {
           children: [
             // Control panel for Start/Stop and sensitivity
             const ControlPanel(),
+            
+            const SizedBox(height: 16),
+            
+            // Camera preview panel
+            const CameraPreviewWidget(),
             
             const SizedBox(height: 16),
             

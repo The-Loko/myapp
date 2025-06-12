@@ -5,6 +5,8 @@ class AppColors {
   static const Color secondaryColor = Color(0xFFEEEEEE);  // Light gray
   static const Color accentColor = Color(0xFF008080);  // Teal
   static const Color errorColor = Color(0xFFD32F2F);  // Red for errors
+  static const Color successColor = Color(0xFF4CAF50);  // Green for success
+  static const Color warningColor = Color(0xFFFF9800);  // Orange for warnings
 }
 
 class SensorConstants {
