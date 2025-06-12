@@ -1,13 +1,16 @@
 import 'package:flutter/foundation.dart';
+import 'dart:async';
 import '../services/gyroscope_service.dart';
 import '../services/connection_service.dart';
 import '../models/control_data.dart';
 import '../models/bluetooth_device.dart';
 import '../models/wifi_network.dart';
+import '../models/sensor_data.dart';
 
 class CarControlProvider with ChangeNotifier {
   final GyroscopeService _gyroscopeService = GyroscopeService();
   final ConnectionService _connectionService = ConnectionService();
+  StreamSubscription<SensorData>? _sensorDataSubscription;
 
   bool get isControlActive => _gyroscopeService.isActive;
   double get sensitivity => _gyroscopeService.sensitivity;
@@ -17,6 +20,19 @@ class CarControlProvider with ChangeNotifier {
   
   ControlData? _lastControlData;
   ControlData? get lastControlData => _lastControlData;
+  
+  SensorData? _lastSensorData;
+  SensorData? get lastSensorData => _lastSensorData;
+
+  CarControlProvider() {
+    // Listen to sensor data stream
+    _sensorDataSubscription = _connectionService.sensorDataStream.listen(
+      (sensorData) {
+        _lastSensorData = sensorData;
+        notifyListeners();
+      },
+    );
+  }
 
   void toggleControl() {
     if (isControlActive) {
@@ -76,11 +92,12 @@ class CarControlProvider with ChangeNotifier {
     _connectionService.sendControlData(data);
     notifyListeners();
   }
-
   @override
   void dispose() {
+    _sensorDataSubscription?.cancel();
     _gyroscopeService.dispose();
     _connectionService.disconnect();
+    _connectionService.dispose();
     super.dispose();
   }
 }

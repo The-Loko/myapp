@@ -6,6 +6,7 @@ import 'package:wifi_scan/wifi_scan.dart' as wifi_scan; // Re-add alias 'wifi_sc
 import '../models/control_data.dart';
 import '../models/bluetooth_device.dart';
 import '../models/wifi_network.dart';
+import '../models/sensor_data.dart';
 import '../utils/logger.dart';
 
 
@@ -18,6 +19,11 @@ class ConnectionService {
   fbs.BluetoothConnection? _bluetoothConnection;
   String _errorMessage = '';
   String _targetAddress = '';
+  StreamSubscription<Uint8List>? _dataSubscription;
+  
+  // Sensor data stream
+  final StreamController<SensorData> _sensorDataController = StreamController<SensorData>.broadcast();
+  Stream<SensorData> get sensorDataStream => _sensorDataController.stream;
 
   // Getters
   ConnectionType get connectionType => _connectionType;
@@ -44,7 +50,6 @@ class ConnectionService {
       return false;
     }
   }
-
   // Connect via Bluetooth
   Future<bool> connectBluetooth(String address) async {
     _connectionType = ConnectionType.bluetooth;
@@ -54,6 +59,10 @@ class ConnectionService {
     try {
       _bluetoothConnection = await fbs.BluetoothConnection.toAddress(address);
       _connectionStatus = ConnectionStatus.connected;
+      
+      // Start listening for incoming data
+      _startListeningForData();
+      
       return true;
     } catch (e) {
       _errorMessage = e.toString();
@@ -61,9 +70,11 @@ class ConnectionService {
       return false;
     }
   }
-
   // Disconnect
   Future<void> disconnect() async {
+    _dataSubscription?.cancel();
+    _dataSubscription = null;
+    
     if (_connectionType == ConnectionType.bluetooth) {
       await _bluetoothConnection?.close();
       _bluetoothConnection = null;
@@ -140,11 +151,72 @@ class ConnectionService {
         }
         Logger.log('Scan result: $started');
       }
-      return [];
-    } catch (e) {
+      return [];    } catch (e) {
       _errorMessage = "WiFi scan failed: ${e.toString()}";
       Logger.log('WiFi scan error: $_errorMessage');
       return [];
     }
+  }
+
+  // Start listening for incoming data from ESP32
+  void _startListeningForData() {
+    if (_bluetoothConnection == null) return;
+    
+    String dataBuffer = '';
+    
+    _dataSubscription = _bluetoothConnection!.input!.listen(
+      (Uint8List data) {
+        try {
+          String receivedData = utf8.decode(data);
+          dataBuffer += receivedData;
+          
+          // Process complete lines (JSON messages end with newline)
+          while (dataBuffer.contains('\n')) {
+            int newlineIndex = dataBuffer.indexOf('\n');
+            String completeMessage = dataBuffer.substring(0, newlineIndex).trim();
+            dataBuffer = dataBuffer.substring(newlineIndex + 1);
+            
+            if (completeMessage.isNotEmpty) {
+              _processIncomingMessage(completeMessage);
+            }
+          }
+        } catch (e) {
+          Logger.log('Error processing incoming data: $e');
+        }
+      },
+      onError: (error) {
+        Logger.log('Bluetooth data stream error: $error');
+        _connectionStatus = ConnectionStatus.error;
+        _errorMessage = 'Data stream error: $error';
+      },
+    );
+  }
+  
+  // Process incoming messages from ESP32
+  void _processIncomingMessage(String message) {
+    try {
+      Logger.log('Received: $message');
+      
+      // Try to parse as JSON
+      final data = jsonDecode(message);
+      
+      // Check if it's sensor data (contains distance, temperature, humidity)
+      if (data.containsKey('distance') && 
+          data.containsKey('temperature') && 
+          data.containsKey('humidity')) {
+        
+        final sensorData = SensorData.fromJson(data);
+        _sensorDataController.add(sensorData);
+        Logger.log('Sensor data received: $sensorData');
+      }
+    } catch (e) {
+      Logger.log('Error parsing incoming message: $e');
+    }
+  }
+  
+  // Clean up resources
+  void dispose() {
+    _dataSubscription?.cancel();
+    _sensorDataController.close();
   }
 }

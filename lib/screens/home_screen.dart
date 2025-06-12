@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../providers/car_control_provider.dart';
 import '../widgets/connection_panel.dart';
 import '../widgets/control_panel.dart';
+import '../widgets/sensor_panel.dart';
+import '../widgets/sensor_history_widget.dart';
 import '../utils/constants.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -17,8 +19,7 @@ class HomeScreen extends StatelessWidget {
         backgroundColor: AppColors.primaryColor,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
+        padding: const EdgeInsets.all(16),        child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Control panel for Start/Stop and sensitivity
@@ -28,6 +29,15 @@ class HomeScreen extends StatelessWidget {
             
             // Connection panel for WiFi/Bluetooth
             const ConnectionPanel(),
+            
+            const SizedBox(height: 16),
+              // Sensor data panel
+            const SensorPanel(),
+            
+            const SizedBox(height: 16),
+            
+            // Sensor history panel
+            const SensorHistoryWidget(),
             
             const SizedBox(height: 24),
             

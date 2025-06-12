@@ -7,6 +7,28 @@ class AppColors {
   static const Color errorColor = Color(0xFFD32F2F);  // Red for errors
 }
 
+class SensorConstants {
+  // Distance thresholds (in cm)
+  static const double dangerDistance = 10.0;
+  static const double warningDistance = 20.0;
+  static const double safeDistance = 50.0;
+  
+  // Temperature thresholds (in °C)
+  static const double freezingTemp = 0.0;
+  static const double coldTemp = 20.0;
+  static const double normalTemp = 30.0;
+  static const double hotTemp = 40.0;
+  
+  // Humidity thresholds (in %)
+  static const double lowHumidity = 30.0;
+  static const double normalHumidity = 60.0;
+  static const double highHumidity = 80.0;
+  
+  // Sensor update intervals
+  static const Duration sensorUpdateInterval = Duration(seconds: 1);
+  static const Duration maxSensorAge = Duration(seconds: 5);
+}
+
 class AppTheme {
   static ThemeData getTheme() {
     return ThemeData(
