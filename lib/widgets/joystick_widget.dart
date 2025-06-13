@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:control_pad/control_pad.dart';
+import 'package:flutter_joystick/flutter_joystick.dart';
 import 'package:provider/provider.dart';
-import 'dart:math' as math;
 import '../providers/car_control_provider.dart';
 import '../utils/constants.dart';
 
@@ -24,20 +23,24 @@ class JoystickWidget extends StatelessWidget {
           width: 3,
         ),
       ),
-      child: isActive          ? JoystickView(
-              onDirectionChanged: (double degrees, double distance) {
-                // Convert polar coordinates to cartesian
-                final radians = degrees * (math.pi / 180);
-                final normalizedDistance = distance.clamp(0.0, 1.0);
-                
-                final x = normalizedDistance * -1 * math.cos(radians);
-                final y = normalizedDistance * math.sin(radians);
-                
-                provider.updateJoystickPosition(x, y);
+      child: isActive
+          ? Joystick(
+              listener: (StickDragDetails details) {
+                // The flutter_joystick package provides x,y values in -1 to 1 range
+                provider.updateJoystickPosition(details.x, details.y);
               },
-              backgroundColor: Colors.transparent,
-              innerCircleColor: AppColors.accentColor,
-              size: 180,
+              base: JoystickBase(
+                decoration: JoystickBaseDecoration(
+                  color: Colors.transparent,
+                  drawOuterCircle: false,
+                ),
+              ),
+              stick: JoystickStick(
+                decoration: JoystickStickDecoration(
+                  color: AppColors.accentColor,
+                  shadowColor: AppColors.accentColor.withOpacity(0.5),
+                ),
+              ),
             )
           : Center(
               child: Icon(
