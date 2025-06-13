@@ -62,9 +62,8 @@ class ConnectionService {
     
     try {
       _bluetoothConnection = await fbs.BluetoothConnection.toAddress(address);
-      
-      // Listen to data
-      _dataSubscription = _bluetoothConnection!.input.listen(
+        // Listen to data
+      _dataSubscription = _bluetoothConnection!.input?.listen(
         (data) {
           // Handle incoming data
           final String message = utf8.decode(data);

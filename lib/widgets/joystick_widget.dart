@@ -34,11 +34,10 @@ class JoystickWidget extends StatelessWidget {
                   color: Colors.transparent,
                   drawOuterCircle: false,
                 ),
-              ),
-              stick: JoystickStick(
+              ),                stick: JoystickStick(
                 decoration: JoystickStickDecoration(
                   color: AppColors.accentColor,
-                  shadowColor: AppColors.accentColor.withOpacity(0.5),
+                  shadowColor: AppColors.accentColor.withValues(alpha: 0.5),
                 ),
               ),
             )
