@@ -1,21 +1,24 @@
 # GyroCar
 
-A new Flutter project.
+A Flutter app that controls a remote car using an on-screen joystick through Bluetooth or WiFi communication with an ESP32.
+
+## Features
+
+- **Joystick Control**: Intuitive on-screen joystick for precise car movement control
+- **Dual Connectivity**: Connect via Bluetooth or WiFi
+- **Real-time Control**: Immediate response to joystick movements
+- **Adjustable Sensitivity**: Fine-tune control responsiveness
+- **ESP32 Integration**: Seamless communication with ESP32-based car hardware
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+This project uses Flutter for the mobile app and Arduino/ESP32 for the car's embedded system.
 
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 
-# Connecting Android App to ESP32 via Bluetooth
+## Connecting Android App to ESP32 via Bluetooth
 
 1. Firmware
    - Ensure ESP32 runs the `gyrocar_esp32.ino` with `BluetoothSerial`.
@@ -28,17 +31,19 @@ samples, guidance on mobile development, and a full API reference.
    - Request location permission in Flutter (e.g. via `permission_handler`).
 
 4. Scanning & Connecting
+
    ```dart
    final devices = await provider.scanBluetoothDevices();
    await provider.connectBluetooth(devices.first.address);
    ```
 
 5. Data Exchange
-   - Send JSON‐formatted lines from Flutter:  
-     `connectionService.sendData('{"x":1.0,"y":0.0,"z":0.0}\n');`  
-   - On ESP32, read in `handleBluetoothData()` and parse.
+   - Send JSON‐formatted lines from Flutter using joystick coordinates:
+     `connectionService.sendData('{"x":1.0,"y":0.0,"z":0.0}\n');`
+   - On ESP32, read in `handleBluetoothData()` and parse for motor control.
 
 6. Disconnect
+
    ```dart
    await provider.disconnect();
    ```
