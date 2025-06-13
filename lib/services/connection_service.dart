@@ -18,12 +18,21 @@ class ConnectionService {
   fbs.BluetoothConnection? _bluetoothConnection;
   String _errorMessage = '';
   String _targetAddress = '';
+  
+  // Data listening
+  StreamSubscription<Uint8List>? _dataSubscription;
+  Function(String)? _onDataReceived;
 
   // Getters
   ConnectionType get connectionType => _connectionType;
   ConnectionStatus get connectionStatus => _connectionStatus;
   String get errorMessage => _errorMessage;
   String get targetAddress => _targetAddress;
+
+  // Set data callback
+  void setDataCallback(Function(String) callback) {
+    _onDataReceived = callback;
+  }
 
   // Connect via WiFi
   Future<bool> connectWifi(String ipAddress, int port) async {
@@ -53,6 +62,24 @@ class ConnectionService {
     
     try {
       _bluetoothConnection = await fbs.BluetoothConnection.toAddress(address);
+      
+      // Listen to data
+      _dataSubscription = _bluetoothConnection!.input.listen(
+        (data) {
+          // Handle incoming data
+          final String message = utf8.decode(data);
+          _onDataReceived?.call(message);
+        },
+        onError: (error) {
+          _errorMessage = "Bluetooth data listening error: ${error.toString()}";
+          _connectionStatus = ConnectionStatus.error;
+        },
+        onDone: () {
+          // Connection was closed
+          _connectionStatus = ConnectionStatus.disconnected;
+        },
+      );
+      
       _connectionStatus = ConnectionStatus.connected;
       return true;
     } catch (e) {
@@ -61,9 +88,12 @@ class ConnectionService {
       return false;
     }
   }
-
   // Disconnect
   Future<void> disconnect() async {
+    // Cancel data subscription
+    await _dataSubscription?.cancel();
+    _dataSubscription = null;
+    
     if (_connectionType == ConnectionType.bluetooth) {
       await _bluetoothConnection?.close();
       _bluetoothConnection = null;

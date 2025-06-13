@@ -4,6 +4,7 @@ import '../providers/car_control_provider.dart';
 import '../utils/constants.dart';
 import '../services/connection_service.dart';
 import 'joystick_widget.dart';
+import 'sensor_display_widget.dart';
 
 class ControlPanel extends StatelessWidget {
   const ControlPanel({super.key});
@@ -129,9 +130,12 @@ class ControlPanel extends StatelessWidget {
                       style: const TextStyle(color: AppColors.secondaryColor),
                     ),
                   ],
-                ),
-              ),
+                ),              ),
             ],
+            
+            // Sensor Data Display
+            const SizedBox(height: 16),
+            const SensorDisplayWidget(),
           ],
         ),
       ),

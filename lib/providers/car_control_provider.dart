@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
+import 'dart:convert';
 import '../services/joystick_service.dart';
 import '../services/connection_service.dart';
 import '../models/control_data.dart';
+import '../models/sensor_data.dart';
 import '../models/bluetooth_device.dart';
 import '../models/wifi_network.dart';
 
@@ -17,6 +19,10 @@ class CarControlProvider with ChangeNotifier {
   
   ControlData? _lastControlData;
   ControlData? get lastControlData => _lastControlData;
+
+  // Sensor data properties
+  SensorData? _lastSensorData;
+  SensorData? get lastSensorData => _lastSensorData;
 
   void toggleControl() {
     if (isControlActive) {
@@ -48,14 +54,15 @@ class CarControlProvider with ChangeNotifier {
   void updateJoystickPosition(double x, double y) {
     _joystickService.updateJoystickPosition(x, y);
   }
-
   Future<bool> connectWifi(String ipAddress, int port) async {
+    _connectionService.setDataCallback(handleSensorData);
     final result = await _connectionService.connectWifi(ipAddress, port);
     notifyListeners();
     return result;
   }
 
   Future<bool> connectBluetooth(String address) async {
+    _connectionService.setDataCallback(handleSensorData);
     final result = await _connectionService.connectBluetooth(address);
     notifyListeners();
     return result;
@@ -73,6 +80,30 @@ class CarControlProvider with ChangeNotifier {
   Future<List<WiFiNetwork>> scanWifiNetworks() {
     return _connectionService.scanWifiNetworks();
   }
+
+  // Handle sensor data received from ESP32
+  void handleSensorData(String jsonData) {
+    try {
+      final Map<String, dynamic> data = json.decode(jsonData);
+      
+      // Check if this is sensor data (contains distance, temperature, pressure)
+      if (data.containsKey('distance') && 
+          data.containsKey('temperature') && 
+          data.containsKey('pressure')) {
+        _lastSensorData = SensorData.fromJson(data);
+        notifyListeners();
+        
+        if (kDebugMode) {
+          print('Sensor data received: $_lastSensorData');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error parsing sensor data: $e');
+      }
+    }
+  }
+
   void _handleJoystickData(ControlData data) {
     _lastControlData = data;
     _connectionService.sendControlData(data);
