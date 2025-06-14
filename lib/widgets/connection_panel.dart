@@ -41,14 +41,15 @@ class _ConnectionPanelState extends State<ConnectionPanel> {
             if (!isConnected) ...[
               ElevatedButton(
                 onPressed: () async {
-                  // Show dialog with device list
-                  final devices = await provider.scanBluetoothDevices();
+                  // Show dialog with device list                  final devices = await provider.scanBluetoothDevices();
                   
                   // Guard context use before async gap
                   if (!mounted) return; 
                   
                   // Using a separate function to avoid BuildContext across async gap issue
-                  _showDeviceSelectionDialog(context, devices); 
+                  if (mounted) {
+                    _showDeviceSelectionDialog(context, devices);
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accentColor,
@@ -107,11 +108,12 @@ class _ConnectionPanelState extends State<ConnectionPanel> {
             ElevatedButton(
               onPressed: () async {
                 if (provider.connectionStatus == ConnectionStatus.connected) {
-                  provider.disconnect();
-                } else {
+                  provider.disconnect();                } else {
                   final devices = await provider.scanBluetoothDevices();
                   if (!mounted) return;
-                  _showDeviceSelectionDialog(context, devices);
+                  if (mounted) {
+                    _showDeviceSelectionDialog(context, devices);
+                  }
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -156,11 +158,10 @@ class _ConnectionPanelState extends State<ConnectionPanel> {
             },
           ),
         ],
-      ),
-    ).then((selectedDevice) {
+      ),    ).then((selectedDevice) {
       // Guard context use after async gap (dialog closing)
       if (!mounted) return; 
-      if (selectedDevice != null) {
+      if (selectedDevice != null && mounted) {
         Provider.of<CarControlProvider>(context, listen: false)
           .connectBluetooth(selectedDevice.address);
       }

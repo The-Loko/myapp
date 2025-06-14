@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import '../utils/constants.dart';
 import '../utils/logger.dart';
 
@@ -22,61 +21,15 @@ class VideoStreamWidget extends StatefulWidget {
 }
 
 class _VideoStreamWidgetState extends State<VideoStreamWidget> {
-  late WebViewController _webViewController;
   final TextEditingController _ipController = TextEditingController();
-  bool _webViewInitialized = false;
   bool _hasError = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeWebView();
     // Set default IP from ESP32 code (you might want to make this configurable)
     _ipController.text = '192.168.1.100'; // Default IP, user can change
   }
-
-  void _initializeWebView() {
-    _webViewController = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (String url) {
-            Logger.log('Video stream page started loading: $url');
-            setState(() {
-              _hasError = false;
-            });
-          },
-          onPageFinished: (String url) {
-            Logger.log('Video stream page finished loading: $url');
-          },
-          onWebResourceError: (WebResourceError error) {
-            Logger.log('Video stream error: ${error.description}');
-            setState(() {
-              _hasError = true;
-            });
-          },
-        ),
-      );
-    _webViewInitialized = true;
-  }
-
-  void _loadStream() {
-    if (widget.streamUrl != null && _webViewInitialized) {
-      _webViewController.loadRequest(Uri.parse(widget.streamUrl!));
-      setState(() {
-        _hasError = false;
-      });
-    }
-  }
-
-  @override
-  void didUpdateWidget(VideoStreamWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.streamUrl != oldWidget.streamUrl && widget.streamUrl != null) {
-      _loadStream();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -94,16 +47,15 @@ class _VideoStreamWidgetState extends State<VideoStreamWidget> {
                 topLeft: Radius.circular(4),
                 topRight: Radius.circular(4),
               ),
-            ),
-            child: Row(
+            ),            child: Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.videocam,
                   color: AppColors.secondaryColor,
                   size: 24,
                 ),
                 const SizedBox(width: 8),
-                Text(
+                const Text(
                   'ESP32-CAM Video Stream',
                   style: TextStyle(
                     color: AppColors.secondaryColor,
@@ -157,8 +109,7 @@ class _VideoStreamWidgetState extends State<VideoStreamWidget> {
                       widget.onIpAddressChanged?.call(_ipController.text);
                       widget.onToggleStream?.call();
                     }
-                  },
-                  icon: Icon(widget.isStreaming ? Icons.stop : Icons.play_arrow),
+                  },                  icon: Icon(widget.isStreaming ? Icons.stop : Icons.play_arrow),
                   label: Text(widget.isStreaming ? 'Stop' : 'Start'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: widget.isStreaming ? Colors.red : AppColors.accentColor,
@@ -260,9 +211,7 @@ class _VideoStreamWidgetState extends State<VideoStreamWidget> {
           ),
         ),
       );
-    }
-
-    if (widget.streamUrl == null) {
+    }    if (widget.streamUrl == null) {
       return Container(
         color: Colors.black,
         child: const Center(
@@ -271,7 +220,54 @@ class _VideoStreamWidgetState extends State<VideoStreamWidget> {
       );
     }
 
-    return WebViewWidget(controller: _webViewController);
+    // Use Image.network to display MJPEG stream
+    return Image.network(
+      widget.streamUrl!,
+      fit: BoxFit.cover,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) {
+          return child;
+        }
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        AppLogger.logError('Video stream error: $error');
+        return Container(
+          color: Colors.black,
+          child: const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: Colors.red,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'Stream Connection Failed',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 16,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Check ESP32-CAM IP and connection',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 12,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildStreamInfo() {
