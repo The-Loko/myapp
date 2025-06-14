@@ -249,6 +249,64 @@ class _VideoStreamWidgetState extends State<VideoStreamWidget> {
               ],
             ),
           ),
+          
+          // Connection Info and Troubleshooting
+          Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Stream Information:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'URL: ${_isScreenOn ? 'http://${_ipController.text}' : 'Not connected'}',
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                const Text(
+                  'Protocol: MJPEG over HTTP',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                const Text(
+                  'Port: 80 (default)',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                const SizedBox(height: 12),
+                
+                // Troubleshooting section
+                const Text(
+                  'Troubleshooting:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Colors.orange,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  '• Ensure ESP32-CAM is connected to same WiFi network',
+                  style: TextStyle(fontSize: 11, color: Colors.grey),
+                ),
+                const Text(
+                  '• Check ESP32-CAM IP address (Serial Monitor)',
+                  style: TextStyle(fontSize: 11, color: Colors.grey),
+                ),
+                const Text(
+                  '• Verify ESP32-CAM is running videostream.ino',
+                  style: TextStyle(fontSize: 11, color: Colors.grey),
+                ),
+                const Text(
+                  '• HTTP traffic is now allowed for local networks',
+                  style: TextStyle(fontSize: 11, color: Colors.green),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
