@@ -36,10 +36,12 @@ class _ConnectionPanelState extends State<ConnectionPanel> {
               ),
             ),
             const SizedBox(height: 16),
-            
-            // Bluetooth device selection (simplified)
+              // Bluetooth device selection (simplified)
             if (!isConnected) ...[              ElevatedButton(
                 onPressed: () async {
+                  // Store context before async operation
+                  final currentContext = context;
+                  
                   // Show dialog with device list
                   final devices = await provider.scanBluetoothDevices();
                   
@@ -47,7 +49,7 @@ class _ConnectionPanelState extends State<ConnectionPanel> {
                   if (!mounted) return; 
                   
                   // Call the dialog function
-                  _showDeviceSelectionDialog(context, devices);
+                  _showDeviceSelectionDialog(currentContext, devices);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accentColor,
@@ -102,13 +104,16 @@ class _ConnectionPanelState extends State<ConnectionPanel> {
             
             const SizedBox(height: 16),
             
-            // Scan & Connect / Disconnect Button
-            ElevatedButton(
+            // Scan & Connect / Disconnect Button            ElevatedButton(
               onPressed: () async {
                 if (provider.connectionStatus == ConnectionStatus.connected) {
-                  provider.disconnect();                } else {                  final devices = await provider.scanBluetoothDevices();
+                  provider.disconnect();                } else {
+                  // Store context before async operation
+                  final currentContext = context;
+                  
+                  final devices = await provider.scanBluetoothDevices();
                   if (!mounted) return;
-                  _showDeviceSelectionDialog(context, devices);
+                  _showDeviceSelectionDialog(currentContext, devices);
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -121,9 +126,11 @@ class _ConnectionPanelState extends State<ConnectionPanel> {
       ),
     );
   }
-  
   // Helper method to show device selection dialog
   void _showDeviceSelectionDialog(BuildContext context, List<BluetoothDevice> devices) {
+    // Store provider reference before async operation
+    final provider = Provider.of<CarControlProvider>(context, listen: false);
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -151,14 +158,13 @@ class _ConnectionPanelState extends State<ConnectionPanel> {
             onPressed: () {
               Navigator.of(context).pop();
             },
-          ),
-        ],
+          ),        ],
       ),    ).then((selectedDevice) {
       // Guard context use after async gap (dialog closing)
       if (!mounted) return; 
       if (selectedDevice != null) {
-        Provider.of<CarControlProvider>(context, listen: false)
-          .connectBluetooth(selectedDevice.address);
+        // Use stored provider reference
+        provider.connectBluetooth(selectedDevice.address);
       }
     });
   }
