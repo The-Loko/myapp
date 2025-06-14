@@ -100,14 +100,15 @@ class _ConnectionPanelState extends State<ConnectionPanel> {
                   ),
                 ],
               ),
-            ),
-            
+            ),            
             const SizedBox(height: 16),
             
-            // Scan & Connect / Disconnect Button            ElevatedButton(
+            // Scan & Connect / Disconnect Button
+            ElevatedButton(
               onPressed: () async {
                 if (provider.connectionStatus == ConnectionStatus.connected) {
-                  provider.disconnect();                } else {
+                  provider.disconnect();
+                } else {
                   // Store context before async operation
                   final currentContext = context;
                   
