@@ -1,13 +1,11 @@
-Based on your code, here's how the Flutter app and ESP32-CAM work together to stream video:
-
 ESP32-CAM Video Streaming Setup
 The ESP32-CAM creates a web server that streams video in MJPEG format:
 
 1. Camera Configuration
-In videostream.ino, the ESP32-CAM is configured for the AI Thinker model with specific GPIO pins for camera functionality.
-
+   In videostream.ino, the ESP32-CAM is configured for the AI Thinker model with specific GPIO pins for camera functionality.
 2. Web Server Creation
-The ESP32 starts an HTTP server on port 80:
+   The ESP32 starts an HTTP server on port 80:
+
 ```
 // From videostream.ino
 void startCameraServer(){
@@ -26,8 +24,9 @@ void startCameraServer(){
   }
 }
 ```
+
 3. MJPEG Stream Handler
-The stream_handler function continuously captures frames and sends them as an MJPEG stream:
+   The stream_handler function continuously captures frames and sends them as an MJPEG stream:
 
 Captures frames using esp_camera_fb_get()
 Converts frames to JPEG format if needed
@@ -37,15 +36,18 @@ Flutter App Video Display
 The Flutter app displays the video stream using a WebView:
 
 1. Screen Widget
-In screen.dart, the video is displayed in a WebView:
+   In screen.dart, the video is displayed in a WebView:
+
 ```
 // From screen.dart
 child: WebView(
   initialUrl: "http://192.168.225.97", // ESP32-CAM IP address
 )
 ```
+
 2. Toggle Control
-The main app has a button to start/stop the video stream:
+   The main app has a button to start/stop the video stream:
+
 ```
 // From homepage.dart
 RaisedButton(
@@ -63,6 +65,7 @@ RaisedButton(
   child: _isScreenOn ? Text("stop") : Text("start"),
 )
 ```
+
 Connection Flow
 ESP32-CAM Setup:
 
