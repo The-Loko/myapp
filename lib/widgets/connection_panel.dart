@@ -43,13 +43,11 @@ class _ConnectionPanelState extends State<ConnectionPanel> {
                   // Show dialog with device list
                   final devices = await provider.scanBluetoothDevices();
                   
-                  // Guard context use before async gap
+                  // Guard context use after async operation
                   if (!mounted) return; 
                   
-                  // Using a separate function to avoid BuildContext across async gap issue
-                  if (mounted) {
-                    _showDeviceSelectionDialog(context, devices);
-                  }
+                  // Call the dialog function
+                  _showDeviceSelectionDialog(context, devices);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accentColor,
@@ -108,12 +106,9 @@ class _ConnectionPanelState extends State<ConnectionPanel> {
             ElevatedButton(
               onPressed: () async {
                 if (provider.connectionStatus == ConnectionStatus.connected) {
-                  provider.disconnect();                } else {
-                  final devices = await provider.scanBluetoothDevices();
+                  provider.disconnect();                } else {                  final devices = await provider.scanBluetoothDevices();
                   if (!mounted) return;
-                  if (mounted) {
-                    _showDeviceSelectionDialog(context, devices);
-                  }
+                  _showDeviceSelectionDialog(context, devices);
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -161,7 +156,7 @@ class _ConnectionPanelState extends State<ConnectionPanel> {
       ),    ).then((selectedDevice) {
       // Guard context use after async gap (dialog closing)
       if (!mounted) return; 
-      if (selectedDevice != null && mounted) {
+      if (selectedDevice != null) {
         Provider.of<CarControlProvider>(context, listen: false)
           .connectBluetooth(selectedDevice.address);
       }
