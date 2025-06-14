@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import '../services/joystick_service.dart';
 import '../services/connection_service.dart';
+import '../services/video_stream_service.dart';
 import '../models/control_data.dart';
 import '../models/sensor_data.dart';
 import '../models/bluetooth_device.dart';
@@ -10,6 +11,7 @@ import '../models/wifi_network.dart';
 class CarControlProvider with ChangeNotifier {
   final JoystickService _joystickService = JoystickService();
   final ConnectionService _connectionService = ConnectionService();
+  final VideoStreamService _videoStreamService = VideoStreamService();
 
   bool get isControlActive => _joystickService.isActive;
   double get sensitivity => _joystickService.sensitivity;
@@ -17,12 +19,20 @@ class CarControlProvider with ChangeNotifier {
   ConnectionStatus get connectionStatus => _connectionService.connectionStatus;
   String get errorMessage => _connectionService.errorMessage;
   
+  // Video streaming getters
+  bool get isVideoStreaming => _videoStreamService.isStreaming;
+  String? get videoStreamUrl => _videoStreamService.streamUrl;
+  
   ControlData? _lastControlData;
   ControlData? get lastControlData => _lastControlData;
 
   // Sensor data properties
   SensorData? _lastSensorData;
   SensorData? get lastSensorData => _lastSensorData;
+
+  // Video streaming properties
+  String _esp32CamIpAddress = '';
+  String get esp32CamIpAddress => _esp32CamIpAddress;
 
   void toggleControl() {
     if (isControlActive) {
@@ -110,10 +120,49 @@ class CarControlProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Video streaming methods
+  void setEsp32CamIpAddress(String ipAddress) {
+    _esp32CamIpAddress = ipAddress;
+    notifyListeners();
+  }
+
+  Future<bool> startVideoStream({String? ipAddress}) async {
+    final ip = ipAddress ?? _esp32CamIpAddress;
+    if (ip.isEmpty) {
+      return false;
+    }
+
+    _videoStreamService.setStreamStatusCallback((isStreaming) {
+      notifyListeners();
+    });
+
+    final success = await _videoStreamService.startVideoStream(ip);
+    notifyListeners();
+    return success;
+  }
+
+  void stopVideoStream() {
+    _videoStreamService.stopVideoStream();
+    notifyListeners();
+  }
+
+  void toggleVideoStream() {
+    if (isVideoStreaming) {
+      stopVideoStream();
+    } else {
+      startVideoStream();
+    }
+  }
+
+  Map<String, dynamic> getVideoStreamInfo() {
+    return _videoStreamService.getStreamInfo();
+  }
+
   @override
   void dispose() {
     _joystickService.dispose();
     _connectionService.disconnect();
+    _videoStreamService.dispose();
     super.dispose();
   }
 }

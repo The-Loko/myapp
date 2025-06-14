@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/car_control_provider.dart';
 import '../widgets/connection_panel.dart';
 import '../widgets/control_panel.dart';
+import '../widgets/video_stream_widget.dart';
 import '../utils/constants.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -17,10 +18,27 @@ class HomeScreen extends StatelessWidget {
         backgroundColor: AppColors.primaryColor,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
+        padding: const EdgeInsets.all(16),        child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Video streaming panel
+            Consumer<CarControlProvider>(
+              builder: (context, provider, child) {
+                return VideoStreamWidget(
+                  streamUrl: provider.videoStreamUrl,
+                  isStreaming: provider.isVideoStreaming,
+                  onToggleStream: () {
+                    provider.toggleVideoStream();
+                  },
+                  onIpAddressChanged: (ipAddress) {
+                    provider.setEsp32CamIpAddress(ipAddress);
+                  },
+                );
+              },
+            ),
+            
+            const SizedBox(height: 16),
+            
             // Control panel for Start/Stop and sensitivity
             const ControlPanel(),
             
