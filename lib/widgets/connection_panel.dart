@@ -38,10 +38,10 @@ class _ConnectionPanelState extends State<ConnectionPanel> {
             const SizedBox(height: 16),
             
             // Bluetooth device selection (simplified)
-            if (!isConnected) ...[
-              ElevatedButton(
+            if (!isConnected) ...[              ElevatedButton(
                 onPressed: () async {
-                  // Show dialog with device list                  final devices = await provider.scanBluetoothDevices();
+                  // Show dialog with device list
+                  final devices = await provider.scanBluetoothDevices();
                   
                   // Guard context use before async gap
                   if (!mounted) return; 
